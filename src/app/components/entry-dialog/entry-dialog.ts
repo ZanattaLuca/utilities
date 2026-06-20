@@ -44,7 +44,6 @@ export class EntryDialogComponent {
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
   protected readonly months = this.monthNames.map((name, i) => ({ value: i + 1, label: name }));
-  protected readonly quarters = [1, 2, 3, 4];
 
   constructor(
     fb: FormBuilder,
@@ -62,29 +61,20 @@ export class EntryDialogComponent {
     this.form = fb.group({
       type: [{ value: data.type, disabled: this.isEdit }, Validators.required],
       anno: [this.currentYear, Validators.required],
-      subPeriodo: [entry ? null : (data.type === 'acqua' ? 1 : 1)],
+      subPeriodo: [entry ? null : 1],
       importo: [entry?.importo ?? '', [Validators.required, Validators.min(0.01)]],
       pagato: [entry?.pagato ?? false],
     });
 
     if (entry) {
-      this.parsePeriodo(entry.periodo, data.type);
+      this.parsePeriodo(entry.periodo);
     }
   }
 
-  private parsePeriodo(periodo: string, type: UtilityType): void {
-    if (type === 'rifiuti') {
-      this.form.patchValue({ anno: parseInt(periodo, 10) });
-    } else if (type === 'acqua') {
-      const m = periodo.match(/^(\d{4})-Q([1-4])$/);
-      if (m) {
-        this.form.patchValue({ anno: parseInt(m[1], 10), subPeriodo: parseInt(m[2], 10) });
-      }
-    } else {
-      const m = periodo.match(/^(\d{4})-(\d{2})$/);
-      if (m) {
-        this.form.patchValue({ anno: parseInt(m[1], 10), subPeriodo: parseInt(m[2], 10) });
-      }
+  private parsePeriodo(periodo: string): void {
+    const m = periodo.match(/^(\d{4})-(\d{2})$/);
+    if (m) {
+      this.form.patchValue({ anno: parseInt(m[1], 10), subPeriodo: parseInt(m[2], 10) });
     }
   }
 
@@ -96,39 +86,10 @@ export class EntryDialogComponent {
     return UTILITY_LABELS[this.selectedType];
   }
 
-  protected get showSubPeriodo(): boolean {
-    return this.selectedType !== 'rifiuti';
-  }
-
-  protected get subPeriodoLabel(): string {
-    return this.selectedType === 'acqua' ? 'Quarter' : 'Month';
-  }
-
-  protected get subPeriodoOptions(): { value: number; label: string }[] {
-    return this.selectedType === 'acqua'
-      ? this.quarters.map((q) => ({ value: q, label: `Q${q}` }))
-      : this.months;
-  }
-
   protected get periodo(): string {
     const anno = this.form.get('anno')?.value;
-    const type = this.selectedType;
-    if (type === 'rifiuti') {
-      return `${anno}`;
-    }
     const sub = this.form.get('subPeriodo')?.value;
-    if (type === 'acqua') {
-      return `${anno}-Q${sub}`;
-    }
     return `${anno}-${String(sub).padStart(2, '0')}`;
-  }
-
-  protected onTypeChange(): void {
-    if (this.showSubPeriodo) {
-      this.form.get('subPeriodo')?.enable();
-    } else {
-      this.form.get('subPeriodo')?.disable();
-    }
   }
 
   protected onSubmit(): void {
