@@ -22,10 +22,10 @@ export interface Config {
 export const UTILITY_TYPES: UtilityType[] = ['luce', 'gas', 'acqua', 'rifiuti'];
 
 export const UTILITY_LABELS: Record<UtilityType, string> = {
-  luce: 'Luce',
+  luce: 'Electricity',
   gas: 'Gas',
-  acqua: 'Acqua',
-  rifiuti: 'Rifiuti',
+  acqua: 'Water',
+  rifiuti: 'Waste',
 };
 
 export function parsePeriodo(periodo: string): number {

@@ -5,6 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { SpesaEntry, parsePeriodo } from '../../models/config.model';
+import { PeriodPipe } from '../../shared/period.pipe';
 
 interface SortedEntry extends SpesaEntry {
   _origIndex: number;
@@ -12,7 +13,7 @@ interface SortedEntry extends SpesaEntry {
 
 @Component({
   selector: 'app-entry-table',
-  imports: [MatTableModule, MatCheckboxModule, MatButtonModule, MatIconModule, CurrencyPipe],
+  imports: [MatTableModule, MatCheckboxModule, MatButtonModule, MatIconModule, CurrencyPipe, PeriodPipe],
   templateUrl: './entry-table.html',
   styleUrl: './entry-table.scss',
 })

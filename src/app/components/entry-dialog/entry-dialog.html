@@ -15,9 +15,9 @@
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ subPeriodoLabel }}</mat-label>
         <mat-select formControlName="subPeriodo">
-          @for (v of subPeriodoOptions; track v) {
-            <mat-option [value]="v">
-              {{ type === 'acqua' ? 'Q' + v : v }}
+          @for (v of subPeriodoOptions; track v.value) {
+            <mat-option [value]="v.value">
+              {{ v.label }}
             </mat-option>
           }
         </mat-select>

@@ -39,7 +39,11 @@ export class EntryDialogComponent {
 
   protected readonly currentYear = new Date().getFullYear();
   protected readonly years: number[] = [];
-  protected readonly months = Array.from({ length: 12 }, (_, i) => i + 1);
+  protected readonly monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  protected readonly months = this.monthNames.map((name, i) => ({ value: i + 1, label: name }));
   protected readonly quarters = [1, 2, 3, 4];
 
   constructor(
@@ -93,8 +97,10 @@ export class EntryDialogComponent {
     return this.type === 'acqua' ? 'Quarter' : 'Month';
   }
 
-  protected get subPeriodoOptions(): number[] {
-    return this.type === 'acqua' ? this.quarters : this.months;
+  protected get subPeriodoOptions(): { value: number; label: string }[] {
+    return this.type === 'acqua'
+      ? this.quarters.map((q) => ({ value: q, label: `Q${q}` }))
+      : this.months;
   }
 
   protected get periodo(): string {
