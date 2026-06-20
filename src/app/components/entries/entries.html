@@ -1,0 +1,29 @@
+<div class="entries-container">
+  <mat-tab-group [preserveContent]="true" [(selectedIndex)]="selectedIndex">
+    @for (type of utilityTypes; track type) {
+      <mat-tab>
+        <ng-template mat-tab-label>
+          {{ labels[type] }}
+        </ng-template>
+
+        <ng-template matTabContent>
+          <app-entry-table
+            [entries]="config().spese[type]"
+            (edit)="openEditDialog(type, $event.index, $event.entry)"
+            (remove)="deleteEntry(type, $event)"
+            (togglePaid)="togglePaid(type, $event.index, $event.entry)"
+          />
+        </ng-template>
+      </mat-tab>
+    }
+  </mat-tab-group>
+
+  <button
+    mat-fab
+    class="add-fab"
+    color="primary"
+    (click)="openAddDialog(utilityTypes[selectedIndex])"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

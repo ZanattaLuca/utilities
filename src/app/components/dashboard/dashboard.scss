@@ -1,0 +1,56 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.dashboard-card {
+  .card-icon.luce {
+    color: #f5b041;
+  }
+  .card-icon.gas {
+    color: #e74c3c;
+  }
+  .card-icon.acqua {
+    color: #3498db;
+  }
+  .card-icon.rifiuti {
+    color: #7f8c8d;
+  }
+
+  .card-total {
+    font-size: 1.75rem;
+    font-weight: 500;
+    margin: 8px 0 4px;
+  }
+
+  .card-unpaid {
+    color: var(--mat-sys-error, #e53935);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .card-paid {
+    color: var(--mat-sys-primary, #43a047);
+    font-size: 0.875rem;
+  }
+
+  .card-empty {
+    color: var(--mat-sys-outline, #9e9e9e);
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .dashboard-card .card-total {
+    font-size: 1.35rem;
+  }
+}
