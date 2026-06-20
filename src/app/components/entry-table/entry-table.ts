@@ -1,10 +1,14 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, computed } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { SpesaEntry } from '../../models/config.model';
+import { SpesaEntry, parsePeriodo } from '../../models/config.model';
+
+interface SortedEntry extends SpesaEntry {
+  _origIndex: number;
+}
 
 @Component({
   selector: 'app-entry-table',
@@ -21,7 +25,16 @@ export class EntryTableComponent {
 
   protected readonly displayedColumns = ['periodo', 'importo', 'pagato', 'azioni'];
 
-  protected onTogglePaid(entry: SpesaEntry, index: number): void {
-    this.togglePaid.emit({ index, entry: { ...entry, pagato: !entry.pagato } });
+  protected readonly sorted = computed<SortedEntry[]>(() =>
+    this.entries()
+      .map((e, i) => ({ ...e, _origIndex: i }))
+      .sort((a, b) => parsePeriodo(a.periodo) - parsePeriodo(b.periodo)),
+  );
+
+  protected onTogglePaid(entry: SortedEntry): void {
+    this.togglePaid.emit({
+      index: entry._origIndex,
+      entry: { ...entry, pagato: !entry.pagato },
+    });
   }
 }
