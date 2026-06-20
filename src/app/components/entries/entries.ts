@@ -30,9 +30,9 @@ export class EntriesComponent {
       maxWidth: '95vw',
     });
 
-    dialogRef.afterClosed().subscribe((result: SpesaEntry | undefined) => {
+    dialogRef.afterClosed().subscribe((result: { entry: SpesaEntry; type: UtilityType } | undefined) => {
       if (result) {
-        this.configService.addEntry(type, result);
+        this.configService.addEntry(result.type, result.entry);
       }
     });
   }
@@ -44,9 +44,9 @@ export class EntriesComponent {
       maxWidth: '95vw',
     });
 
-    dialogRef.afterClosed().subscribe((result: SpesaEntry | undefined) => {
+    dialogRef.afterClosed().subscribe((result: { entry: SpesaEntry; type: UtilityType } | undefined) => {
       if (result) {
-        this.configService.updateEntry(type, index, result);
+        this.configService.updateEntry(result.type, index, result.entry);
       }
     });
   }

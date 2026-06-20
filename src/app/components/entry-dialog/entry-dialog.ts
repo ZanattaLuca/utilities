@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { UtilityType, SpesaEntry, UTILITY_LABELS } from '../../models/config.model';
+import { UtilityType, SpesaEntry, UTILITY_TYPES, UTILITY_LABELS } from '../../models/config.model';
 
 export interface EntryDialogData {
   type: UtilityType;
@@ -34,11 +34,11 @@ export interface EntryDialogData {
 export class EntryDialogComponent {
   protected readonly form: FormGroup;
   protected readonly isEdit: boolean;
-  protected readonly type: UtilityType;
-  protected readonly label: string;
 
   protected readonly currentYear = new Date().getFullYear();
   protected readonly years: number[] = [];
+  protected readonly utilityTypes = UTILITY_TYPES;
+  protected readonly utilityLabels = UTILITY_LABELS;
   protected readonly monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -48,11 +48,9 @@ export class EntryDialogComponent {
 
   constructor(
     fb: FormBuilder,
-    private readonly dialogRef: MatDialogRef<EntryDialogComponent, SpesaEntry>,
+    private readonly dialogRef: MatDialogRef<EntryDialogComponent, { entry: SpesaEntry; type: UtilityType }>,
     @Inject(MAT_DIALOG_DATA) public readonly data: EntryDialogData,
   ) {
-    this.type = data.type;
-    this.label = UTILITY_LABELS[data.type];
     this.isEdit = !!data.entry;
 
     for (let y = this.currentYear - 3; y <= this.currentYear + 1; y++) {
@@ -62,21 +60,22 @@ export class EntryDialogComponent {
     const entry = data.entry;
 
     this.form = fb.group({
+      type: [{ value: data.type, disabled: this.isEdit }, Validators.required],
       anno: [this.currentYear, Validators.required],
-      subPeriodo: [entry ? null : (this.type === 'acqua' ? 1 : 1)],
+      subPeriodo: [entry ? null : (data.type === 'acqua' ? 1 : 1)],
       importo: [entry?.importo ?? '', [Validators.required, Validators.min(0.01)]],
       pagato: [entry?.pagato ?? false],
     });
 
     if (entry) {
-      this.parsePeriodo(entry.periodo);
+      this.parsePeriodo(entry.periodo, data.type);
     }
   }
 
-  private parsePeriodo(periodo: string): void {
-    if (this.type === 'rifiuti') {
+  private parsePeriodo(periodo: string, type: UtilityType): void {
+    if (type === 'rifiuti') {
       this.form.patchValue({ anno: parseInt(periodo, 10) });
-    } else if (this.type === 'acqua') {
+    } else if (type === 'acqua') {
       const m = periodo.match(/^(\d{4})-Q([1-4])$/);
       if (m) {
         this.form.patchValue({ anno: parseInt(m[1], 10), subPeriodo: parseInt(m[2], 10) });
@@ -89,30 +88,47 @@ export class EntryDialogComponent {
     }
   }
 
+  protected get selectedType(): UtilityType {
+    return this.form.get('type')?.value;
+  }
+
+  protected get label(): string {
+    return UTILITY_LABELS[this.selectedType];
+  }
+
   protected get showSubPeriodo(): boolean {
-    return this.type !== 'rifiuti';
+    return this.selectedType !== 'rifiuti';
   }
 
   protected get subPeriodoLabel(): string {
-    return this.type === 'acqua' ? 'Quarter' : 'Month';
+    return this.selectedType === 'acqua' ? 'Quarter' : 'Month';
   }
 
   protected get subPeriodoOptions(): { value: number; label: string }[] {
-    return this.type === 'acqua'
+    return this.selectedType === 'acqua'
       ? this.quarters.map((q) => ({ value: q, label: `Q${q}` }))
       : this.months;
   }
 
   protected get periodo(): string {
     const anno = this.form.get('anno')?.value;
-    if (this.type === 'rifiuti') {
+    const type = this.selectedType;
+    if (type === 'rifiuti') {
       return `${anno}`;
     }
     const sub = this.form.get('subPeriodo')?.value;
-    if (this.type === 'acqua') {
+    if (type === 'acqua') {
       return `${anno}-Q${sub}`;
     }
     return `${anno}-${String(sub).padStart(2, '0')}`;
+  }
+
+  protected onTypeChange(): void {
+    if (this.showSubPeriodo) {
+      this.form.get('subPeriodo')?.enable();
+    } else {
+      this.form.get('subPeriodo')?.disable();
+    }
   }
 
   protected onSubmit(): void {
@@ -124,7 +140,7 @@ export class EntryDialogComponent {
       importo: this.form.get('importo')?.value,
       pagato: this.form.get('pagato')?.value,
     };
-    this.dialogRef.close(entry);
+    this.dialogRef.close({ entry, type: this.selectedType });
   }
 
   protected onCancel(): void {
