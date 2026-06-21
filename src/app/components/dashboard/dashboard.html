@@ -1,3 +1,11 @@
+<div class="period-filter">
+  <mat-button-toggle-group [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
+    @for (opt of periodOptions; track opt.value) {
+      <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+    }
+  </mat-button-toggle-group>
+</div>
+
 <div class="dashboard">
   @for (type of utilityTypes; track type) {
     <mat-card class="dashboard-card" appearance="outlined">
