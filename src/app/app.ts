@@ -1,15 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { DashboardComponent } from './components/dashboard/dashboard';
-import { EntriesComponent } from './components/entries/entries';
-import { ConfigService } from './services/config.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-root',
-  imports: [MatToolbarModule, DashboardComponent, EntriesComponent],
+  imports: [MatToolbarModule, MatButtonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  protected readonly config = inject(ConfigService).config;
-}
+export class App {}
