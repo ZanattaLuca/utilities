@@ -52,6 +52,9 @@
   .card-icon.rifiuti {
     color: #b388ff;
   }
+  &.summary-card .card-icon {
+    color: var(--mat-sys-on-surface-variant, #9e9e9e);
+  }
 
   .card-total {
     font-size: 1.75rem;

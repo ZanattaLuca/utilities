@@ -68,5 +68,27 @@
         </mat-card-content>
       </mat-card>
     }
+
+    <mat-card class="dashboard-card summary-card" appearance="outlined">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="card-icon">payments</mat-icon>
+        <mat-card-title>Total Spent</mat-card-title>
+        <mat-card-subtitle>{{ monthsInPeriod() }} months</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="card-total">{{ totalSpent() | currency:'EUR':'symbol':'1.2-2' }}</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="dashboard-card summary-card" appearance="outlined">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="card-icon">calendar_month</mat-icon>
+        <mat-card-title>Cost / Month</mat-card-title>
+        <mat-card-subtitle>average</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="card-total">{{ costPerMonth() | currency:'EUR':'symbol':'1.2-2' }}</div>
+      </mat-card-content>
+    </mat-card>
   </div>
 }

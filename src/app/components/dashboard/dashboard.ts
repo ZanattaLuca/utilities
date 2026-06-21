@@ -75,6 +75,47 @@ export class DashboardComponent {
     return values;
   });
 
+  protected readonly totalSpent = computed(() => {
+    const visible = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
+    return Number(visible.reduce((sum, t) => sum + this.total(t), 0).toFixed(2));
+  });
+
+  protected readonly monthsInPeriod = computed(() => {
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = now.getMonth() + 1;
+    switch (this.selectedPeriod()) {
+      case 'this-year':
+        return curM;
+      case '1y':
+        return 12;
+      case '3y':
+        return 36;
+      case '5y':
+        return 60;
+      default: {
+        const visible = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
+        let minP = Infinity;
+        for (const t of visible) {
+          for (const e of this.filtered(t)) {
+            const p = parsePeriodo(e.periodo);
+            if (p && p < minP) minP = p;
+          }
+        }
+        if (minP === Infinity) return 0;
+        const fY = Math.floor(minP / 100);
+        const fM = minP % 100;
+        return (curY - fY) * 12 + (curM - fM) + 1;
+      }
+    }
+  });
+
+  protected readonly costPerMonth = computed(() => {
+    const m = this.monthsInPeriod();
+    if (m === 0) return 0;
+    return Number((this.totalSpent() / m).toFixed(2));
+  });
+
   protected onUtilityChange(values: (UtilityType | 'total')[]): void {
     const types = values.filter((v): v is UtilityType => v !== 'total');
     this.config.setUtilities(types);
