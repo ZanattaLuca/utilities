@@ -4,6 +4,22 @@
   padding: 8px 16px 0;
 }
 
+.utility-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px 0;
+
+  .filter-label {
+    color: var(--mat-sys-outline, #9e9e9e);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
 .spending-donut {
   padding: 16px 16px 0;
 
@@ -57,6 +73,21 @@
 @media (max-width: 480px) {
   .period-filter {
     padding: 8px 8px 0;
+
+    mat-button-toggle {
+      font-size: 0.75rem;
+      padding: 0 8px;
+    }
+  }
+
+  .utility-filter {
+    flex-wrap: wrap;
+    padding: 8px 8px 0;
+
+    .filter-label {
+      width: 100%;
+      text-align: center;
+    }
 
     mat-button-toggle {
       font-size: 0.75rem;

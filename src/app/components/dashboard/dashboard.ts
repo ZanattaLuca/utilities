@@ -35,6 +35,19 @@ export class DashboardComponent {
   protected readonly icons = UTILITY_ICONS;
   protected readonly periodOptions = PERIOD_OPTIONS;
   protected readonly selectedPeriod = signal<TimePeriod>('all');
+  protected readonly selectedUtilities = signal<Set<UtilityType>>(new Set(UTILITY_TYPES));
+  protected readonly showTotal = signal(true);
+
+  protected readonly selectedUtilityValues = computed<(UtilityType | 'total')[]>(() => {
+    const types = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
+    return this.showTotal() ? [...types, 'total'] : types;
+  });
+
+  protected onUtilityChange(values: (UtilityType | 'total')[]): void {
+    const types = new Set(values.filter((v): v is UtilityType => v !== 'total'));
+    this.selectedUtilities.set(types);
+    this.showTotal.set(values.includes('total'));
+  }
 
   protected readonly cutoff = computed(() => {
     const now = new Date();
@@ -75,10 +88,6 @@ export class DashboardComponent {
       formatter: (p: { name: string; value: number; percent: number }) =>
         `${p.name}: €${p.value.toFixed(2)} (${p.percent}%)`,
     },
-    legend: {
-      top: 0,
-      textStyle: { fontSize: 12 },
-    },
     series: [
       {
         type: 'pie' as const,
@@ -90,23 +99,27 @@ export class DashboardComponent {
         emphasis: {
           label: { show: true, fontSize: 14, fontWeight: 'bold' },
         },
-        data: UTILITY_TYPES.map((t) => ({
-          name: UTILITY_LABELS[t],
-          value: Number(this.total(t).toFixed(2)),
-          itemStyle: { color: UTILITY_COLORS[t] },
-        })),
+        data: UTILITY_TYPES
+          .filter((t) => this.selectedUtilities().has(t))
+          .map((t) => ({
+            name: UTILITY_LABELS[t],
+            value: Number(this.total(t).toFixed(2)),
+            itemStyle: { color: UTILITY_COLORS[t] },
+          })),
       },
     ],
   }));
 
   protected readonly lineOption = computed(() => {
+    const visibleTypes = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
+
     const grouped = Object.fromEntries(
-      UTILITY_TYPES.map((t) => [t, new Map<string, number>()]),
+      visibleTypes.map((t) => [t, new Map<string, number>()]),
     ) as Record<UtilityType, Map<string, number>>;
 
     const periodSet = new Set<string>();
 
-    for (const type of UTILITY_TYPES) {
+    for (const type of visibleTypes) {
       for (const e of this.filtered(type)) {
         periodSet.add(e.periodo);
         grouped[type].set(e.periodo, (grouped[type].get(e.periodo) || 0) + e.importo);
@@ -116,10 +129,8 @@ export class DashboardComponent {
     const periods = [...periodSet].sort((a, b) => parsePeriodo(a) - parsePeriodo(b));
 
     const series: any[] = [];
-    let totalRunning = 0;
-    const totalData: number[] = [];
 
-    for (const type of UTILITY_TYPES) {
+    for (const type of visibleTypes) {
       let cum = 0;
       const data: number[] = [];
       for (const p of periods) {
@@ -136,23 +147,26 @@ export class DashboardComponent {
       });
     }
 
-    for (const p of periods) {
-      let periodSum = 0;
-      for (const type of UTILITY_TYPES) {
-        periodSum += grouped[type].get(p) || 0;
+    if (this.showTotal()) {
+      let totalRunning = 0;
+      const totalData: number[] = [];
+      for (const p of periods) {
+        let periodSum = 0;
+        for (const type of visibleTypes) {
+          periodSum += grouped[type].get(p) || 0;
+        }
+        totalRunning += periodSum;
+        totalData.push(Number(totalRunning.toFixed(2)));
       }
-      totalRunning += periodSum;
-      totalData.push(Number(totalRunning.toFixed(2)));
+      series.push({
+        type: 'line' as const,
+        data: totalData,
+        name: 'Total',
+        smooth: true,
+        lineStyle: { color: '#ffffff', width: 3 },
+        itemStyle: { color: '#ffffff' },
+      });
     }
-
-    series.push({
-      type: 'line' as const,
-      data: totalData,
-      name: 'Total',
-      smooth: true,
-      lineStyle: { color: '#ffffff', width: 3 },
-      itemStyle: { color: '#ffffff' },
-    });
 
     return {
       tooltip: {

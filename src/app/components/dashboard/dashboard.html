@@ -6,6 +6,16 @@
   </mat-button-toggle-group>
 </div>
 
+<div class="utility-filter">
+  <span class="filter-label">Filters</span>
+  <mat-button-toggle-group multiple [value]="selectedUtilityValues()" (change)="onUtilityChange($event.value)">
+    @for (type of utilityTypes; track type) {
+      <mat-button-toggle [value]="type">{{ labels[type] }}</mat-button-toggle>
+    }
+    <mat-button-toggle value="total">Total</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
 <div class="spending-donut">
   <div echarts [options]="donutOption()" class="chart-container"></div>
 </div>
