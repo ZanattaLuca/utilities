@@ -4,6 +4,22 @@
   padding: 8px 16px 0;
 }
 
+.spending-donut {
+  padding: 16px 16px 0;
+
+  .chart-container {
+    height: 250px;
+  }
+}
+
+.spending-line {
+  padding: 8px 16px 0;
+
+  .chart-container {
+    height: 300px;
+  }
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -56,6 +72,22 @@
     mat-button-toggle {
       font-size: 0.75rem;
       padding: 0 8px;
+    }
+  }
+
+  .spending-donut {
+    padding: 12px 8px 0;
+
+    .chart-container {
+      height: 220px;
+    }
+  }
+
+  .spending-line {
+    padding: 8px 8px 0;
+
+    .chart-container {
+      height: 240px;
     }
   }
 

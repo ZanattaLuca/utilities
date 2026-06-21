@@ -6,6 +6,14 @@
   </mat-button-toggle-group>
 </div>
 
+<div class="spending-donut">
+  <div echarts [options]="donutOption()" class="chart-container"></div>
+</div>
+
+<div class="spending-line">
+  <div echarts [options]="lineOption()" class="chart-container"></div>
+</div>
+
 <div class="dashboard">
   @for (type of utilityTypes; track type) {
     <mat-card class="dashboard-card" appearance="outlined">

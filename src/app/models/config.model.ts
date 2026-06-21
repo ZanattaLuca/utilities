@@ -40,3 +40,10 @@ export const UTILITY_ICONS: Record<UtilityType, string> = {
   acqua: 'water_drop',
   rifiuti: 'delete',
 };
+
+export const UTILITY_COLORS: Record<UtilityType, string> = {
+  luce: '#f5b041',
+  gas: '#e74c3c',
+  acqua: '#3498db',
+  rifiuti: '#7f8c8d',
+};
