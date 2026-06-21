@@ -1,7 +1,6 @@
 export interface SpesaEntry {
   periodo: string;
   importo: number;
-  pagato: boolean;
 }
 
 export type UtilityType = 'luce' | 'gas' | 'acqua' | 'rifiuti';

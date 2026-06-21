@@ -9,7 +9,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { UtilityType, SpesaEntry, UTILITY_TYPES, UTILITY_LABELS } from '../../models/config.model';
 
 export interface EntryDialogData {
@@ -26,7 +25,6 @@ export interface EntryDialogData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatCheckboxModule,
   ],
   templateUrl: './entry-dialog.html',
   styleUrl: './entry-dialog.scss',
@@ -63,7 +61,7 @@ export class EntryDialogComponent {
       anno: [this.currentYear, Validators.required],
       subPeriodo: [entry ? null : 1],
       importo: [entry?.importo ?? '', [Validators.required, Validators.min(0.01)]],
-      pagato: [entry?.pagato ?? false],
+
     });
 
     if (entry) {
@@ -99,7 +97,7 @@ export class EntryDialogComponent {
     const entry: SpesaEntry = {
       periodo: this.periodo,
       importo: this.form.get('importo')?.value,
-      pagato: this.form.get('pagato')?.value,
+
     };
     this.dialogRef.close({ entry, type: this.selectedType });
   }

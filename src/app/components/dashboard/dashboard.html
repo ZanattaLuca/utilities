@@ -24,11 +24,7 @@
       </mat-card-header>
       <mat-card-content>
         <div class="card-total">{{ total(type) | currency:'EUR':'symbol':'1.2-2' }}</div>
-        @if (unpaid(type) > 0) {
-          <div class="card-unpaid">{{ unpaid(type) }} unpaid</div>
-        } @else if (count(type) > 0) {
-          <div class="card-paid">All paid</div>
-        } @else {
+        @if (count(type) === 0) {
           <div class="card-empty">No entries</div>
         }
       </mat-card-content>

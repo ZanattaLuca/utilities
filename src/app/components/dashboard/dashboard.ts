@@ -65,10 +65,6 @@ export class DashboardComponent {
     return this.filtered(type).reduce((sum, e) => sum + e.importo, 0);
   }
 
-  protected unpaid(type: UtilityType): number {
-    return this.filtered(type).filter((e) => !e.pagato).length;
-  }
-
   protected count(type: UtilityType): number {
     return this.filtered(type).length;
   }

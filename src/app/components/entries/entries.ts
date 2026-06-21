@@ -54,8 +54,4 @@ export class EntriesComponent {
   protected deleteEntry(type: UtilityType, index: number): void {
     this.configService.deleteEntry(type, index);
   }
-
-  protected togglePaid(type: UtilityType, index: number, entry: SpesaEntry): void {
-    this.configService.updateEntry(type, index, entry);
-  }
 }

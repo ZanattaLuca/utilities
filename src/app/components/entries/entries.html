@@ -11,7 +11,6 @@
             [entries]="config().spese[type]"
             (edit)="openEditDialog(type, $event.index, $event.entry)"
             (remove)="deleteEntry(type, $event)"
-            (togglePaid)="togglePaid(type, $event.index, $event.entry)"
           />
         </ng-template>
       </mat-tab>
