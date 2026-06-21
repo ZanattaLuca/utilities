@@ -2,7 +2,7 @@
   <mat-tab-group>
     <mat-tab label="Time">
       <div class="tab-content">
-        <mat-button-toggle-group [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
+        <mat-button-toggle-group hideSingleSelectionIndicator [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
           @for (opt of periodOptions; track opt.value) {
             <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
           }
@@ -12,7 +12,7 @@
 
     <mat-tab label="Utilities">
       <div class="tab-content">
-        <mat-button-toggle-group multiple [value]="selectedUtilityValues()" (change)="onUtilityChange($event.value)">
+        <mat-button-toggle-group multiple hideMultipleSelectionIndicator [value]="selectedUtilityValues()" (change)="onUtilityChange($event.value)">
           @for (type of utilityTypes; track type) {
             <mat-button-toggle [value]="type">{{ labels[type] }}</mat-button-toggle>
           }
@@ -23,7 +23,7 @@
 
     <mat-tab label="Display">
       <div class="tab-content">
-        <mat-button-toggle-group multiple [value]="selectedChartValues()" (change)="onDisplayChange($event.value)">
+        <mat-button-toggle-group multiple hideMultipleSelectionIndicator [value]="selectedChartValues()" (change)="onDisplayChange($event.value)">
           @for (opt of chartOptions; track opt.value) {
             <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
           }
