@@ -41,8 +41,8 @@ export const UTILITY_ICONS: Record<UtilityType, string> = {
 };
 
 export const UTILITY_COLORS: Record<UtilityType, string> = {
-  luce: '#f5b041',
-  gas: '#e74c3c',
-  acqua: '#3498db',
-  rifiuti: '#7f8c8d',
+  luce: '#ffc14d',
+  gas: '#ff5252',
+  acqua: '#29d4f5',
+  rifiuti: '#b388ff',
 };

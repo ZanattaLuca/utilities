@@ -1,43 +1,66 @@
-<div class="period-filter">
-  <mat-button-toggle-group [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
-    @for (opt of periodOptions; track opt.value) {
-      <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
-    }
-  </mat-button-toggle-group>
-</div>
+<mat-card appearance="outlined" class="filter-panel">
+  <mat-tab-group>
+    <mat-tab label="Time">
+      <div class="tab-content">
+        <mat-button-toggle-group [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
+          @for (opt of periodOptions; track opt.value) {
+            <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
+    </mat-tab>
 
-<div class="utility-filter">
-  <span class="filter-label">Filters</span>
-  <mat-button-toggle-group multiple [value]="selectedUtilityValues()" (change)="onUtilityChange($event.value)">
+    <mat-tab label="Utilities">
+      <div class="tab-content">
+        <mat-button-toggle-group multiple [value]="selectedUtilityValues()" (change)="onUtilityChange($event.value)">
+          @for (type of utilityTypes; track type) {
+            <mat-button-toggle [value]="type">{{ labels[type] }}</mat-button-toggle>
+          }
+          <mat-button-toggle value="total">Total</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Display">
+      <div class="tab-content">
+        <mat-button-toggle-group multiple [value]="selectedChartValues()" (change)="onDisplayChange($event.value)">
+          @for (opt of chartOptions; track opt.value) {
+            <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</mat-card>
+
+@if (showDonut()) {
+  <div class="spending-donut">
+    <div echarts [options]="donutOption()" class="chart-container"></div>
+  </div>
+}
+
+@if (showLine()) {
+  <div class="spending-line">
+    <div echarts [options]="lineOption()" class="chart-container"></div>
+  </div>
+}
+
+@if (showCards()) {
+  <div class="dashboard">
     @for (type of utilityTypes; track type) {
-      <mat-button-toggle [value]="type">{{ labels[type] }}</mat-button-toggle>
+      <mat-card class="dashboard-card" appearance="outlined">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="card-icon {{ type }}">{{ icons[type] }}</mat-icon>
+          <mat-card-title>{{ labels[type] }}</mat-card-title>
+          <mat-card-subtitle>{{ count(type) }} entries</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="card-total">{{ total(type) | currency:'EUR':'symbol':'1.2-2' }}</div>
+          @if (count(type) === 0) {
+            <div class="card-empty">No entries</div>
+          }
+        </mat-card-content>
+      </mat-card>
     }
-    <mat-button-toggle value="total">Total</mat-button-toggle>
-  </mat-button-toggle-group>
-</div>
-
-<div class="spending-donut">
-  <div echarts [options]="donutOption()" class="chart-container"></div>
-</div>
-
-<div class="spending-line">
-  <div echarts [options]="lineOption()" class="chart-container"></div>
-</div>
-
-<div class="dashboard">
-  @for (type of utilityTypes; track type) {
-    <mat-card class="dashboard-card" appearance="outlined">
-      <mat-card-header>
-        <mat-icon mat-card-avatar class="card-icon {{ type }}">{{ icons[type] }}</mat-icon>
-        <mat-card-title>{{ labels[type] }}</mat-card-title>
-        <mat-card-subtitle>{{ count(type) }} entries</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="card-total">{{ total(type) | currency:'EUR':'symbol':'1.2-2' }}</div>
-        @if (count(type) === 0) {
-          <div class="card-empty">No entries</div>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
-</div>
+  </div>
+}

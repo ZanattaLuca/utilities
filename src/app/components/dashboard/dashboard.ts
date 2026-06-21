@@ -3,13 +3,20 @@ import { CurrencyPipe } from '@angular/common';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { UtilityType, UTILITY_TYPES, UTILITY_LABELS, UTILITY_ICONS, UTILITY_COLORS, SpesaEntry, parsePeriodo } from '../../models/config.model';
 
 type TimePeriod = 'this-year' | '1y' | '3y' | '5y' | 'all';
+type ChartKey = 'donut' | 'line' | 'cards';
 
 interface PeriodOption {
   value: TimePeriod;
+  label: string;
+}
+
+interface ChartOption {
+  value: ChartKey;
   label: string;
 }
 
@@ -21,9 +28,15 @@ const PERIOD_OPTIONS: PeriodOption[] = [
   { value: 'all', label: 'All Time' },
 ];
 
+const CHART_OPTIONS: ChartOption[] = [
+  { value: 'donut', label: 'Donut' },
+  { value: 'line', label: 'Line' },
+  { value: 'cards', label: 'Cards' },
+];
+
 @Component({
   selector: 'app-dashboard',
-  imports: [MatButtonToggleModule, MatCardModule, MatIconModule, NgxEchartsDirective, CurrencyPipe],
+  imports: [MatButtonToggleModule, MatCardModule, MatIconModule, MatTabsModule, NgxEchartsDirective, CurrencyPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -34,19 +47,38 @@ export class DashboardComponent {
   protected readonly labels = UTILITY_LABELS;
   protected readonly icons = UTILITY_ICONS;
   protected readonly periodOptions = PERIOD_OPTIONS;
+  protected readonly chartOptions = CHART_OPTIONS;
   protected readonly selectedPeriod = signal<TimePeriod>('all');
   protected readonly selectedUtilities = signal<Set<UtilityType>>(new Set(UTILITY_TYPES));
   protected readonly showTotal = signal(true);
+  protected readonly showDonut = signal(true);
+  protected readonly showLine = signal(true);
+  protected readonly showCards = signal(true);
 
   protected readonly selectedUtilityValues = computed<(UtilityType | 'total')[]>(() => {
     const types = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
     return this.showTotal() ? [...types, 'total'] : types;
   });
 
+  protected readonly selectedChartValues = computed<ChartKey[]>(() => {
+    const values: ChartKey[] = [];
+    if (this.showDonut()) values.push('donut');
+    if (this.showLine()) values.push('line');
+    if (this.showCards()) values.push('cards');
+    return values;
+  });
+
   protected onUtilityChange(values: (UtilityType | 'total')[]): void {
     const types = new Set(values.filter((v): v is UtilityType => v !== 'total'));
     this.selectedUtilities.set(types);
     this.showTotal.set(values.includes('total'));
+  }
+
+  protected onDisplayChange(values: ChartKey[]): void {
+    const set = new Set(values);
+    this.showDonut.set(set.has('donut'));
+    this.showLine.set(set.has('line'));
+    this.showCards.set(set.has('cards'));
   }
 
   protected readonly cutoff = computed(() => {
@@ -85,6 +117,9 @@ export class DashboardComponent {
   protected readonly donutOption = computed(() => ({
     tooltip: {
       trigger: 'item' as const,
+      backgroundColor: '#2a2a2a',
+      borderColor: '#444',
+      textStyle: { color: '#fff' },
       formatter: (p: { name: string; value: number; percent: number }) =>
         `${p.name}: €${p.value.toFixed(2)} (${p.percent}%)`,
     },
@@ -94,10 +129,10 @@ export class DashboardComponent {
         radius: ['45%', '75%'],
         center: ['50%', '55%'],
         avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+        itemStyle: { borderRadius: 4, borderColor: '#1e1e1e', borderWidth: 2 },
         label: { show: false },
         emphasis: {
-          label: { show: true, fontSize: 14, fontWeight: 'bold' },
+          label: { show: true, fontSize: 14, fontWeight: 'bold', color: '#fff' },
         },
         data: UTILITY_TYPES
           .filter((t) => this.selectedUtilities().has(t))
@@ -163,14 +198,17 @@ export class DashboardComponent {
         data: totalData,
         name: 'Total',
         smooth: true,
-        lineStyle: { color: '#ffffff', width: 3 },
-        itemStyle: { color: '#ffffff' },
+        lineStyle: { color: '#33ff00ff', width: 3 },
+        itemStyle: { color: '#33ff00ff' },
       });
     }
 
     return {
       tooltip: {
         trigger: 'axis' as const,
+        backgroundColor: '#2a2a2a',
+        borderColor: '#444',
+        textStyle: { color: '#fff' },
         formatter: (params: any[]) => {
           let result = `${params[0].axisValue}<br/>`;
           for (const p of params) {
@@ -183,13 +221,15 @@ export class DashboardComponent {
       xAxis: {
         type: 'category' as const,
         data: periods,
-        axisLabel: { rotate: 45, fontSize: 10 },
+        axisLabel: { rotate: 45, fontSize: 10, color: '#e0e0e0' },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
         axisTick: { alignWithLabel: true },
       },
       yAxis: {
         type: 'value' as const,
-        axisLabel: { fontSize: 11 },
-        splitLine: { lineStyle: { type: 'dashed' } },
+        axisLabel: { fontSize: 11, color: '#e0e0e0' },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+        splitLine: { lineStyle: { type: 'dashed', color: 'rgba(255,255,255,0.12)' } },
       },
       series,
     };
