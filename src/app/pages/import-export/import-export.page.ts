@@ -6,6 +6,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from '../../services/config.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog';
+import { ShareDialogComponent } from '../../components/share-dialog/share-dialog';
+import { ShareService } from '../../services/share.service';
 
 @Component({
   selector: 'app-import-export-page',
@@ -33,6 +35,24 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
         </button>
       </mat-card-actions>
     </mat-card>
+
+    <mat-card appearance="outlined" class="io-card">
+      <mat-card-header>
+        <mat-card-title>Share</mat-card-title>
+        <mat-card-subtitle>Generate a read-only link to send via WhatsApp</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="io-description">
+          Generates a link containing your bills compressed into the URL. Anyone who opens it can view your dashboard in read-only mode — filters stay interactive, but no data can be modified.
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="start">
+        <button mat-raised-button color="primary" (click)="share()">
+          <mat-icon>share</mat-icon>
+          Share
+        </button>
+      </mat-card-actions>
+    </mat-card>
   `,
   styles: [
     `
@@ -52,6 +72,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
 })
 export class ImportExportPageComponent {
   private readonly configService = inject(ConfigService);
+  private readonly shareService = inject(ShareService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -69,6 +90,13 @@ export class ImportExportPageComponent {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     this.snackBar.open('Configuration exported', 'Dismiss', { duration: 3000 });
+  }
+
+  protected share(): void {
+    const encoded = this.shareService.encode(this.configService.config());
+    const base = `${location.origin}${location.pathname}`;
+    const link = `${base}#/share?d=${encoded}`;
+    this.dialog.open(ShareDialogComponent, { data: link });
   }
 
   protected onFileSelected(event: Event): void {

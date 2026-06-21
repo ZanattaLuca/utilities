@@ -20,9 +20,11 @@ function createEmptyConfig(): Config {
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
   private readonly state = signal<Config>(this.load());
+  private readonly readOnly = signal(false);
 
   readonly config = this.state.asReadonly();
   readonly filters = computed(() => this.state().filters);
+  readonly isReadOnly = this.readOnly.asReadonly();
 
   private updateFilters(patch: Partial<FilterConfig>): void {
     this.state.update((config) => ({
@@ -65,9 +67,20 @@ export class ConfigService {
   }
 
   private persist(): void {
+    if (this.readOnly()) return;
     const config = this.state();
     config.lastUpdated = new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  }
+
+  loadShared(config: Config): void {
+    this.state.set(config);
+    this.readOnly.set(true);
+  }
+
+  exitShared(): void {
+    this.readOnly.set(false);
+    this.state.set(this.load());
   }
 
   getSpese(type: UtilityType): SpesaEntry[] {
@@ -75,6 +88,7 @@ export class ConfigService {
   }
 
   addEntry(type: UtilityType, entry: SpesaEntry): void {
+    if (this.readOnly()) return;
     this.state.update((config) => ({
       ...config,
       spese: {
@@ -86,6 +100,7 @@ export class ConfigService {
   }
 
   updateEntry(type: UtilityType, index: number, entry: SpesaEntry): void {
+    if (this.readOnly()) return;
     this.state.update((config) => {
       const updated = [...config.spese[type]];
       updated[index] = entry;
@@ -98,6 +113,7 @@ export class ConfigService {
   }
 
   deleteEntry(type: UtilityType, index: number): void {
+    if (this.readOnly()) return;
     this.state.update((config) => ({
       ...config,
       spese: {
@@ -113,6 +129,7 @@ export class ConfigService {
   }
 
   importConfig(json: string): void {
+    if (this.readOnly()) return;
     let parsed: Config;
     try {
       parsed = JSON.parse(json);

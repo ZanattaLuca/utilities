@@ -1,8 +1,10 @@
-<mat-toolbar>
-  <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Utilities</a>
-  <a mat-button routerLink="/bills" routerLinkActive="active">Manage Bills</a>
-  <a mat-button routerLink="/import-export" routerLinkActive="active">Import / Export</a>
-</mat-toolbar>
+@if (showChrome()) {
+  <mat-toolbar>
+    <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Utilities</a>
+    <a mat-button routerLink="/bills" routerLinkActive="active">Manage Bills</a>
+    <a mat-button routerLink="/import-export" routerLinkActive="active">Import / Export</a>
+  </mat-toolbar>
+}
 
 <div class="app-content">
   <router-outlet />
