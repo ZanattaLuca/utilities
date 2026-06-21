@@ -2,7 +2,7 @@
   <mat-tab-group>
     <mat-tab label="Time">
       <div class="tab-content">
-        <mat-button-toggle-group hideSingleSelectionIndicator [value]="selectedPeriod()" (change)="selectedPeriod.set($event.value)">
+        <mat-button-toggle-group hideSingleSelectionIndicator [value]="selectedPeriod()" (change)="config.setPeriod($event.value)">
           @for (opt of periodOptions; track opt.value) {
             <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
           }

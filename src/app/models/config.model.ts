@@ -5,6 +5,18 @@ export interface SpesaEntry {
 
 export type UtilityType = 'luce' | 'gas' | 'acqua' | 'rifiuti';
 
+export type TimePeriod = 'this-year' | '1y' | '3y' | '5y' | 'all';
+
+export interface FilterConfig {
+  period: TimePeriod;
+  utilities: UtilityType[];
+  showTotal: boolean;
+  showDonut: boolean;
+  showBar: boolean;
+  showLine: boolean;
+  showCards: boolean;
+}
+
 export interface Spese {
   luce: SpesaEntry[];
   gas: SpesaEntry[];
@@ -16,6 +28,19 @@ export interface Config {
   version: number;
   lastUpdated: string;
   spese: Spese;
+  filters: FilterConfig;
+}
+
+export function createDefaultFilters(): FilterConfig {
+  return {
+    period: 'all',
+    utilities: [...UTILITY_TYPES],
+    showTotal: true,
+    showDonut: true,
+    showBar: true,
+    showLine: true,
+    showCards: true,
+  };
 }
 
 export const UTILITY_TYPES: UtilityType[] = ['luce', 'gas', 'acqua', 'rifiuti'];

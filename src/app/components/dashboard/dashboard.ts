@@ -1,13 +1,13 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { UtilityType, UTILITY_TYPES, UTILITY_LABELS, UTILITY_ICONS, UTILITY_COLORS, SpesaEntry, parsePeriodo } from '../../models/config.model';
+import { UtilityType, UTILITY_TYPES, UTILITY_LABELS, UTILITY_ICONS, UTILITY_COLORS, SpesaEntry, TimePeriod, parsePeriodo } from '../../models/config.model';
+import { ConfigService } from '../../services/config.service';
 
-type TimePeriod = 'this-year' | '1y' | '3y' | '5y' | 'all';
 type ChartKey = 'donut' | 'bar' | 'line' | 'cards';
 
 interface PeriodOption {
@@ -42,6 +42,9 @@ const CHART_OPTIONS: ChartOption[] = [
   styleUrl: './dashboard.scss',
 })
 export class DashboardComponent {
+  private readonly configService = inject(ConfigService);
+  protected readonly config = this.configService;
+
   readonly entries = input.required<Record<UtilityType, SpesaEntry[]>>();
 
   protected readonly utilityTypes = UTILITY_TYPES;
@@ -49,13 +52,14 @@ export class DashboardComponent {
   protected readonly icons = UTILITY_ICONS;
   protected readonly periodOptions = PERIOD_OPTIONS;
   protected readonly chartOptions = CHART_OPTIONS;
-  protected readonly selectedPeriod = signal<TimePeriod>('all');
-  protected readonly selectedUtilities = signal<Set<UtilityType>>(new Set(UTILITY_TYPES));
-  protected readonly showTotal = signal(true);
-  protected readonly showDonut = signal(true);
-  protected readonly showBar = signal(true);
-  protected readonly showLine = signal(true);
-  protected readonly showCards = signal(true);
+
+  protected readonly selectedPeriod = computed<TimePeriod>(() => this.config.filters().period);
+  protected readonly selectedUtilities = computed<Set<UtilityType>>(() => new Set(this.config.filters().utilities));
+  protected readonly showTotal = computed(() => this.config.filters().showTotal);
+  protected readonly showDonut = computed(() => this.config.filters().showDonut);
+  protected readonly showBar = computed(() => this.config.filters().showBar);
+  protected readonly showLine = computed(() => this.config.filters().showLine);
+  protected readonly showCards = computed(() => this.config.filters().showCards);
 
   protected readonly selectedUtilityValues = computed<(UtilityType | 'total')[]>(() => {
     const types = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
@@ -72,17 +76,19 @@ export class DashboardComponent {
   });
 
   protected onUtilityChange(values: (UtilityType | 'total')[]): void {
-    const types = new Set(values.filter((v): v is UtilityType => v !== 'total'));
-    this.selectedUtilities.set(types);
-    this.showTotal.set(values.includes('total'));
+    const types = values.filter((v): v is UtilityType => v !== 'total');
+    this.config.setUtilities(types);
+    this.config.setShowTotal(values.includes('total'));
   }
 
   protected onDisplayChange(values: ChartKey[]): void {
     const set = new Set(values);
-    this.showDonut.set(set.has('donut'));
-    this.showBar.set(set.has('bar'));
-    this.showLine.set(set.has('line'));
-    this.showCards.set(set.has('cards'));
+    this.config.setDisplay({
+      showDonut: set.has('donut'),
+      showBar: set.has('bar'),
+      showLine: set.has('line'),
+      showCards: set.has('cards'),
+    });
   }
 
   protected readonly cutoff = computed(() => {

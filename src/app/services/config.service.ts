@@ -1,5 +1,5 @@
-import { Injectable, signal } from '@angular/core';
-import { Config, SpesaEntry, UtilityType } from '../models/config.model';
+import { Injectable, computed, signal } from '@angular/core';
+import { Config, FilterConfig, SpesaEntry, UtilityType, TimePeriod, createDefaultFilters } from '../models/config.model';
 
 const STORAGE_KEY = 'utilities-config';
 
@@ -13,6 +13,7 @@ function createEmptyConfig(): Config {
       acqua: [],
       rifiuti: [],
     },
+    filters: createDefaultFilters(),
   };
 }
 
@@ -21,6 +22,31 @@ export class ConfigService {
   private readonly state = signal<Config>(this.load());
 
   readonly config = this.state.asReadonly();
+  readonly filters = computed(() => this.state().filters);
+
+  private updateFilters(patch: Partial<FilterConfig>): void {
+    this.state.update((config) => ({
+      ...config,
+      filters: { ...config.filters, ...patch },
+    }));
+    this.persist();
+  }
+
+  setPeriod(period: TimePeriod): void {
+    this.updateFilters({ period });
+  }
+
+  setUtilities(utilities: UtilityType[]): void {
+    this.updateFilters({ utilities });
+  }
+
+  setShowTotal(value: boolean): void {
+    this.updateFilters({ showTotal: value });
+  }
+
+  setDisplay(patch: Partial<Pick<FilterConfig, 'showDonut' | 'showBar' | 'showLine' | 'showCards'>>): void {
+    this.updateFilters(patch);
+  }
 
   private load(): Config {
     try {
@@ -28,6 +54,7 @@ export class ConfigService {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && parsed.version && parsed.spese) {
+          parsed.filters = { ...createDefaultFilters(), ...parsed.filters };
           return parsed;
         }
       }
