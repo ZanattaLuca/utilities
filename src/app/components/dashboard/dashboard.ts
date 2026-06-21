@@ -8,7 +8,7 @@ import { NgxEchartsDirective } from 'ngx-echarts';
 import { UtilityType, UTILITY_TYPES, UTILITY_LABELS, UTILITY_ICONS, UTILITY_COLORS, SpesaEntry, parsePeriodo } from '../../models/config.model';
 
 type TimePeriod = 'this-year' | '1y' | '3y' | '5y' | 'all';
-type ChartKey = 'donut' | 'line' | 'cards';
+type ChartKey = 'donut' | 'bar' | 'line' | 'cards';
 
 interface PeriodOption {
   value: TimePeriod;
@@ -30,6 +30,7 @@ const PERIOD_OPTIONS: PeriodOption[] = [
 
 const CHART_OPTIONS: ChartOption[] = [
   { value: 'donut', label: 'Donut' },
+  { value: 'bar', label: 'Bar' },
   { value: 'line', label: 'Line' },
   { value: 'cards', label: 'Cards' },
 ];
@@ -52,6 +53,7 @@ export class DashboardComponent {
   protected readonly selectedUtilities = signal<Set<UtilityType>>(new Set(UTILITY_TYPES));
   protected readonly showTotal = signal(true);
   protected readonly showDonut = signal(true);
+  protected readonly showBar = signal(true);
   protected readonly showLine = signal(true);
   protected readonly showCards = signal(true);
 
@@ -63,6 +65,7 @@ export class DashboardComponent {
   protected readonly selectedChartValues = computed<ChartKey[]>(() => {
     const values: ChartKey[] = [];
     if (this.showDonut()) values.push('donut');
+    if (this.showBar()) values.push('bar');
     if (this.showLine()) values.push('line');
     if (this.showCards()) values.push('cards');
     return values;
@@ -77,6 +80,7 @@ export class DashboardComponent {
   protected onDisplayChange(values: ChartKey[]): void {
     const set = new Set(values);
     this.showDonut.set(set.has('donut'));
+    this.showBar.set(set.has('bar'));
     this.showLine.set(set.has('line'));
     this.showCards.set(set.has('cards'));
   }
@@ -144,6 +148,96 @@ export class DashboardComponent {
       },
     ],
   }));
+
+  protected readonly barOption = computed(() => {
+    const visibleTypes = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));
+    const showTotal = this.showTotal();
+
+    const grouped = Object.fromEntries(
+      visibleTypes.map((t) => [t, new Map<string, number>()]),
+    ) as Record<UtilityType, Map<string, number>>;
+
+    const periodSet = new Set<string>();
+
+    for (const type of visibleTypes) {
+      for (const e of this.filtered(type)) {
+        periodSet.add(e.periodo);
+        grouped[type].set(e.periodo, (grouped[type].get(e.periodo) || 0) + e.importo);
+      }
+    }
+
+    const periods = [...periodSet].sort((a, b) => parsePeriodo(a) - parsePeriodo(b));
+
+    const totals = periods.map((p) => {
+      let sum = 0;
+      for (const type of visibleTypes) {
+        sum += grouped[type].get(p) || 0;
+      }
+      return Number(sum.toFixed(2));
+    });
+
+    const series: any[] = visibleTypes.map((type) => ({
+      type: 'bar' as const,
+      stack: 'total',
+      data: periods.map((p) => Number((grouped[type].get(p) || 0).toFixed(2))),
+      name: UTILITY_LABELS[type],
+      itemStyle: { color: UTILITY_COLORS[type] },
+      label: { show: false },
+    }));
+
+    if (showTotal) {
+      series.push({
+        type: 'bar' as const,
+        stack: 'total',
+        data: periods.map(() => 0),
+        name: 'Total',
+        itemStyle: { color: 'transparent' },
+        label: {
+          show: true,
+          position: 'top',
+          color: '#fff',
+          formatter: (p: any) => `€${totals[p.dataIndex].toFixed(2)}`,
+        },
+      });
+    }
+
+    return {
+      tooltip: {
+        trigger: 'axis' as const,
+        backgroundColor: '#2a2a2a',
+        borderColor: '#444',
+        textStyle: { color: '#fff' },
+        formatter: (params: any[]) => {
+          let result = `${params[0].axisValue}<br/>`;
+          let total = 0;
+          for (const p of params) {
+            if (p.seriesName === 'Total') continue;
+            result += `${p.marker} ${p.seriesName}: €${p.data.toFixed(2)}<br/>`;
+            total += p.data;
+          }
+          if (showTotal) {
+            result += `Total: €${total.toFixed(2)}<br/>`;
+          }
+          return result;
+        },
+      },
+      grid: { left: 16, right: 16, top: 24, bottom: 4 },
+      xAxis: {
+        type: 'category' as const,
+        data: periods,
+        axisLabel: { rotate: 45, fontSize: 10, color: '#e0e0e0' },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+        axisTick: { alignWithLabel: true },
+      },
+      yAxis: {
+        type: 'value' as const,
+        axisLabel: { fontSize: 11, color: '#e0e0e0' },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+        splitLine: { lineStyle: { type: 'dashed', color: 'rgba(255,255,255,0.12)' } },
+      },
+      series,
+    };
+  });
 
   protected readonly lineOption = computed(() => {
     const visibleTypes = UTILITY_TYPES.filter((t) => this.selectedUtilities().has(t));

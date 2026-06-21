@@ -16,6 +16,14 @@
   }
 }
 
+.spending-bar {
+  padding: 8px 16px 0;
+
+  .chart-container {
+    height: 300px;
+  }
+}
+
 .spending-line {
   padding: 8px 16px 0;
 
@@ -76,6 +84,14 @@
 
     .chart-container {
       height: 220px;
+    }
+  }
+
+  .spending-bar {
+    padding: 8px 8px 0;
+
+    .chart-container {
+      height: 240px;
     }
   }
 

@@ -39,6 +39,12 @@
   </div>
 }
 
+@if (showBar()) {
+  <div class="spending-bar">
+    <div echarts [options]="barOption()" class="chart-container"></div>
+  </div>
+}
+
 @if (showLine()) {
   <div class="spending-line">
     <div echarts [options]="lineOption()" class="chart-container"></div>
