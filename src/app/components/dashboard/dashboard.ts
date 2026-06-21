@@ -76,14 +76,14 @@ export class DashboardComponent {
         `${p.name}: €${p.value.toFixed(2)} (${p.percent}%)`,
     },
     legend: {
-      bottom: 0,
+      top: 0,
       textStyle: { fontSize: 12 },
     },
     series: [
       {
         type: 'pie' as const,
         radius: ['45%', '75%'],
-        center: ['50%', '45%'],
+        center: ['50%', '55%'],
         avoidLabelOverlap: false,
         itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
         label: { show: false },
@@ -100,33 +100,75 @@ export class DashboardComponent {
   }));
 
   protected readonly lineOption = computed(() => {
-    const periodMap = new Map<string, number>();
+    const grouped = Object.fromEntries(
+      UTILITY_TYPES.map((t) => [t, new Map<string, number>()]),
+    ) as Record<UtilityType, Map<string, number>>;
+
+    const periodSet = new Set<string>();
+
     for (const type of UTILITY_TYPES) {
       for (const e of this.filtered(type)) {
-        periodMap.set(e.periodo, (periodMap.get(e.periodo) || 0) + e.importo);
+        periodSet.add(e.periodo);
+        grouped[type].set(e.periodo, (grouped[type].get(e.periodo) || 0) + e.importo);
       }
     }
 
-    const sorted = [...periodMap.entries()].sort(
-      (a, b) => parsePeriodo(a[0]) - parsePeriodo(b[0]),
-    );
+    const periods = [...periodSet].sort((a, b) => parsePeriodo(a) - parsePeriodo(b));
 
-    let cum = 0;
-    const data = sorted.map(([, amount]) => {
-      cum += amount;
-      return Number(cum.toFixed(2));
+    const series: any[] = [];
+    let totalRunning = 0;
+    const totalData: number[] = [];
+
+    for (const type of UTILITY_TYPES) {
+      let cum = 0;
+      const data: number[] = [];
+      for (const p of periods) {
+        cum += grouped[type].get(p) || 0;
+        data.push(Number(cum.toFixed(2)));
+      }
+      series.push({
+        type: 'line' as const,
+        data,
+        name: UTILITY_LABELS[type],
+        smooth: true,
+        lineStyle: { color: UTILITY_COLORS[type], width: 2 },
+        itemStyle: { color: UTILITY_COLORS[type] },
+      });
+    }
+
+    for (const p of periods) {
+      let periodSum = 0;
+      for (const type of UTILITY_TYPES) {
+        periodSum += grouped[type].get(p) || 0;
+      }
+      totalRunning += periodSum;
+      totalData.push(Number(totalRunning.toFixed(2)));
+    }
+
+    series.push({
+      type: 'line' as const,
+      data: totalData,
+      name: 'Total',
+      smooth: true,
+      lineStyle: { color: '#ffffff', width: 3 },
+      itemStyle: { color: '#ffffff' },
     });
 
     return {
       tooltip: {
         trigger: 'axis' as const,
-        formatter: (p: { data: number }[]) =>
-          `€${p[0].data.toFixed(2)}`,
+        formatter: (params: any[]) => {
+          let result = `${params[0].axisValue}<br/>`;
+          for (const p of params) {
+            result += `${p.marker} ${p.seriesName}: €${p.data.toFixed(2)}<br/>`;
+          }
+          return result;
+        },
       },
       grid: { left: 16, right: 16, top: 8, bottom: 4 },
       xAxis: {
         type: 'category' as const,
-        data: sorted.map(([p]) => p),
+        data: periods,
         axisLabel: { rotate: 45, fontSize: 10 },
         axisTick: { alignWithLabel: true },
       },
@@ -135,25 +177,7 @@ export class DashboardComponent {
         axisLabel: { fontSize: 11 },
         splitLine: { lineStyle: { type: 'dashed' } },
       },
-      series: [
-        {
-          type: 'line' as const,
-          data,
-          smooth: true,
-          lineStyle: { color: '#3f51b5', width: 2 },
-          itemStyle: { color: '#3f51b5' },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(63,81,181,0.3)' },
-                { offset: 1, color: 'rgba(63,81,181,0.02)' },
-              ],
-            } as any,
-          },
-        },
-      ],
+      series,
     };
   });
 }
