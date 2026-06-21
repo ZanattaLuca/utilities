@@ -107,4 +107,23 @@ export class ConfigService {
     }));
     this.persist();
   }
+
+  exportConfig(): string {
+    return JSON.stringify(this.state(), null, 2);
+  }
+
+  importConfig(json: string): void {
+    let parsed: Config;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      throw new Error('Invalid JSON file');
+    }
+    if (!parsed || !parsed.version || !parsed.spese) {
+      throw new Error('Invalid configuration file');
+    }
+    parsed.filters = { ...createDefaultFilters(), ...parsed.filters };
+    this.state.set(parsed);
+    this.persist();
+  }
 }
